@@ -74,7 +74,7 @@ firebase.write_text(json.dumps({
         "services": {}
     }],
     "configuration_version": "1"
-}, indent=2) + "\\n", encoding="utf-8")
+}, indent=2) + "\n", encoding="utf-8")
 
 print("NOVA branding patch applied:")
 print("- App label: NOVA")
