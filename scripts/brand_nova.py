@@ -206,7 +206,9 @@ if idx < 0:
     raise SystemExit("Could not find application element in main manifest")
 activity = '        <activity android:name="org.telegram.ui.NovaPrivacyActivity" android:exported="false" android:screenOrientation="unspecified" />\n'
 if "NovaPrivacyActivity" not in manifest_text:
-    app_open = manifest_text.find(">", idx)\n    if app_open < 0:\n        raise SystemExit("Malformed application element in main manifest")\n    manifest_text = manifest_text[:app_open + 1] + "\\n" + activity + manifest_text[app_open + 1:]
+    app_open = manifest_text.find(">", idx)
+    if app_open < 0:\n        raise SystemExit("Malformed application element in main manifest")
+    manifest_text = manifest_text[:app_open + 1] + "\n" + activity + manifest_text[app_open + 1:]
 app_manifest.write_text(manifest_text, encoding="utf-8")
 
 # Add a Settings row and route it to the native NOVA screen.
@@ -215,9 +217,9 @@ src = settings.read_text(encoding="utf-8")
 row_needle = '        items.add(SettingCell.Factory.of(10, IconBackgroundColors.PURPLE.top, IconBackgroundColors.PURPLE.bottom, R.drawable.settings_language, getString(R.string.SettingsLanguage), LocaleController.getCurrentLanguageName()));'
 if src.count(row_needle) != 1:
     raise SystemExit("Settings language row anchor changed; refusing unsafe patch")
-src = src.replace(row_needle, row_needle + '\\n        items.add(SettingCell.Factory.of(28, 0xFF4B75E8, 0xFF7655C9, R.drawable.settings_privacy, "NOVA Privacy Center", "Privacy controls"));', 1)
+src = src.replace(row_needle, row_needle + '\n        items.add(SettingCell.Factory.of(28, 0xFF4B75E8, 0xFF7655C9, R.drawable.settings_privacy, "NOVA Privacy Center", "Privacy controls"));', 1)
 click_needle = '            case 10:\\n                presentSettingFragment(new LanguageSelectActivity());\\n                break;'
 if src.count(click_needle) != 1:
     raise SystemExit("Settings click handler anchor changed; refusing unsafe patch")
-src = src.replace(click_needle, click_needle + '\\n            case 28:\\n                getParentActivity().startActivity(new android.content.Intent(getParentActivity(), NovaPrivacyActivity.class));\\n                break;', 1)
+src = src.replace(click_needle, click_needle + '\n            case 28:\n                getParentActivity().startActivity(new android.content.Intent(getParentActivity(), NovaPrivacyActivity.class));\n                break;', 1)
 settings.write_text(src, encoding="utf-8")
