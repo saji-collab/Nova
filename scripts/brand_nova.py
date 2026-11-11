@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Apply NOVA's first branding and package-identity patch to the upstream Telegram checkout."""
 from pathlib import Path
+import json
 import re
 
 ROOT = Path(__file__).resolve().parents[1] / "upstream"
@@ -55,8 +56,29 @@ if count != 1:
     raise SystemExit("Could not enable RTL support in debug manifest")
 manifest.write_text(data, encoding="utf-8")
 
+# Supply a build-only Firebase placeholder for NOVA's package ID.
+# Push notifications / Firebase services remain unconfigured until NOVA has its own project.
+firebase = ROOT / "TMessagesProj_App/google-services.json"
+firebase.write_text(json.dumps({
+    "project_info": {
+        "project_number": "000000000000",
+        "project_id": "nova-build-placeholder",
+        "storage_bucket": "nova-build-placeholder.invalid"
+    },
+    "client": [{
+        "client_info": {
+            "mobilesdk_app_id": "1:000000000000:android:00000000000000000000000000000000",
+            "android_client_info": {"package_name": "org.nova.messenger"}
+        },
+        "api_key": [{"current_key": "NOVA_BUILD_ONLY_NO_FIREBASE_KEY"}],
+        "services": {}
+    }],
+    "configuration_version": "1"
+}, indent=2) + "\\n", encoding="utf-8")
+
 print("NOVA branding patch applied:")
 print("- App label: NOVA")
 print("- Application ID: org.nova.messenger")
 print("- Official-only passkey entry point disabled")
 print("- Android RTL support enabled")
+print("- Build-only Firebase placeholder generated; Firebase services are not configured")
