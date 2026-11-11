@@ -1,4 +1,5 @@
 name: NOVA Android baseline build
+# Triggered from the repository workflow configuration.
 
 on:
   workflow_dispatch:
