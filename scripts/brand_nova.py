@@ -3,7 +3,7 @@
 from pathlib import Path
 import re
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[1] / "upstream"
 
 def replace_once(path: str, old: str, new: str) -> None:
     p = ROOT / path
