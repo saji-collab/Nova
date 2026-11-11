@@ -204,9 +204,9 @@ needle = '    <application'
 idx = manifest_text.find(needle)
 if idx < 0:
     raise SystemExit("Could not find application element in main manifest")
-activity = '        <activity android:name="org.telegram.ui.NovaPrivacyActivity" android:exported="false" android:screenOrientation="unspecified" />\\n'
+activity = '        <activity android:name="org.telegram.ui.NovaPrivacyActivity" android:exported="false" android:screenOrientation="unspecified" />\n'
 if "NovaPrivacyActivity" not in manifest_text:
-    manifest_text = manifest_text[:idx] + activity + manifest_text[idx:]
+    app_open = manifest_text.find(">", idx)\n    if app_open < 0:\n        raise SystemExit("Malformed application element in main manifest")\n    manifest_text = manifest_text[:app_open + 1] + "\\n" + activity + manifest_text[app_open + 1:]
 app_manifest.write_text(manifest_text, encoding="utf-8")
 
 # Add a Settings row and route it to the native NOVA screen.
