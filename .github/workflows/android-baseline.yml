@@ -1,0 +1,51 @@
+name: NOVA Android baseline build
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+    paths:
+      - ".github/workflows/android-baseline.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    steps:
+      - name: Checkout NOVA project
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android build dependencies
+        run: |
+          yes | sdkmanager --licenses
+          sdkmanager "platform-tools" "platforms;android-36" "build-tools;36.0.0" "ndk;27.2.12479018" "cmake;3.22.1"
+
+      - name: Fetch official Telegram Android source with submodules
+        run: |
+          git clone --depth 1 --recurse-submodules --shallow-submodules https://github.com/DrKLO/Telegram.git upstream
+
+      - name: Build upstream debug baseline
+        working-directory: upstream
+        run: |
+          chmod +x ./gradlew
+          ./gradlew --no-daemon --stacktrace :TMessagesProj_AppStandalone:assembleAfatDebug
+
+      - name: Upload debug APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: NOVA-debug-apk
+          path: upstream/TMessagesProj_AppStandalone/build/outputs/apk/**/*.apk
+          if-no-files-found: error
+          retention-days: 7
