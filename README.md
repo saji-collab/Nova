@@ -15,9 +15,9 @@ The workflow fetches the upstream repository including its submodules at build t
 ## Build the upstream baseline
 
 1. Open **Actions**.
-2. Select **NOVA Android baseline build**.
+2. Select **NOVA Android baseline build** (`upstream-build.yml`).
 3. Choose **Run workflow**.
-4. Download the `NOVA-debug-apk` artifact when the job completes.
+4. Download the `NOVA-upstream-baseline-debug` artifact when the job completes.
 
 The artifact is a development baseline from upstream. It is **not yet the branded NOVA release**.
 
