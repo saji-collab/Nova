@@ -219,7 +219,7 @@ row_needle = '        items.add(SettingCell.Factory.of(10, IconBackgroundColors.
 if src.count(row_needle) != 1:
     raise SystemExit("Settings language row anchor changed; refusing unsafe patch")
 src = src.replace(row_needle, row_needle + '\n        items.add(SettingCell.Factory.of(28, 0xFF4B75E8, 0xFF7655C9, R.drawable.settings_privacy, "NOVA Privacy Center", "Privacy controls"));', 1)
-click_needle = '            case 10:\\n                presentSettingFragment(new LanguageSelectActivity());\\n                break;'
+click_needle = "            case 10:\n                presentSettingFragment(new LanguageSelectActivity());\n                break;"
 if src.count(click_needle) != 1:
     raise SystemExit("Settings click handler anchor changed; refusing unsafe patch")
 src = src.replace(click_needle, click_needle + '\n            case 28:\n                getParentActivity().startActivity(new android.content.Intent(getParentActivity(), NovaPrivacyActivity.class));\n                break;', 1)
