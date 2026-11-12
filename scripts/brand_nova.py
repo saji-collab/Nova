@@ -207,7 +207,8 @@ if idx < 0:
 activity = '        <activity android:name="org.telegram.ui.NovaPrivacyActivity" android:exported="false" android:screenOrientation="unspecified" />\n'
 if "NovaPrivacyActivity" not in manifest_text:
     app_open = manifest_text.find(">", idx)
-    if app_open < 0:\n        raise SystemExit("Malformed application element in main manifest")
+    if app_open < 0:
+        raise SystemExit("Malformed application element in main manifest")
     manifest_text = manifest_text[:app_open + 1] + "\n" + activity + manifest_text[app_open + 1:]
 app_manifest.write_text(manifest_text, encoding="utf-8")
 
