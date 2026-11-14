@@ -83,144 +83,36 @@ print("- Official-only passkey entry point disabled")
 print("- Android RTL support enabled")
 print("- Build-only Firebase placeholder generated; Firebase services are not configured")
 
-# Install the first native NOVA feature: a working Privacy Center entry in Settings.
-privacy_java = ROOT / "TMessagesProj/src/main/java/org/telegram/ui/NovaPrivacyActivity.java"
-privacy_java.write_text(r'''package org.telegram.ui;
-
-import android.app.Activity;
-import android.os.Bundle;
-import android.view.Gravity;
-import android.view.View;
-import android.widget.CompoundButton;
-import android.widget.LinearLayout;
-import android.widget.ScrollView;
-import android.widget.Switch;
-import android.widget.TextView;
-import android.graphics.Color;
-import android.graphics.Typeface;
-import android.content.SharedPreferences;
-import android.view.Window;
-import android.view.WindowManager;
-
-public class NovaPrivacyActivity extends Activity {
-    private static final int BG = 0xFF101116;
-    private static final int PANEL = 0xFF1B1D25;
-    private static final int TEXT = 0xFFF4F5F8;
-    private static final int MUTED = 0xFF9DA3B2;
-    private SharedPreferences prefs;
-
-    @Override protected void onCreate(Bundle state) {
-        super.onCreate(state);
-        getWindow().setStatusBarColor(BG);
-        getWindow().setNavigationBarColor(BG);
-        prefs = getSharedPreferences("nova_privacy", MODE_PRIVATE);
-        ScrollView scroll = new ScrollView(this);
-        scroll.setBackgroundColor(BG);
-        LinearLayout root = new LinearLayout(this);
-        root.setOrientation(LinearLayout.VERTICAL);
-        root.setPadding(dp(20), dp(24), dp(20), dp(28));
-        scroll.addView(root);
-        TextView title = new TextView(this);
-        title.setText("NOVA Privacy Center");
-        title.setTextColor(TEXT);
-        title.setTextSize(25);
-        title.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
-        root.addView(title);
-        TextView subtitle = new TextView(this);
-        subtitle.setText("کنترل‌های امنیت و حریم خصوصی این دستگاه");
-        subtitle.setTextColor(MUTED);
-        subtitle.setTextSize(14);
-        subtitle.setPadding(0, dp(8), 0, dp(22));
-        root.addView(subtitle);
-        addSwitch(root, "محافظت از اسکرین‌شات", "جلوگیری از ثبت تصویر صفحه در بخش‌های NOVA که این محافظت را پشتیبانی می‌کنند.", "secure_screens", false);
-        addInfo(root, "قفل برنامه و چت", "در حال توسعه؛ تا زمان تکمیل قفل سراسری، این گزینه فعال‌نمایی نشده است.");
-        addInfo(root, "حریم خصوصی حساب", "تنظیمات آخرین بازدید، شماره تلفن و وضعیت آنلاین از کنترل‌های رسمی حساب تلگرام استفاده می‌کنند.");
-        setContentView(scroll);
-    }
-
-    private void addSwitch(LinearLayout root, String name, String detail, String key, boolean def) {
-        LinearLayout card = card(root);
-        LinearLayout column = new LinearLayout(this);
-        column.setOrientation(LinearLayout.VERTICAL);
-        column.setPadding(dp(16), dp(14), dp(16), dp(14));
-        card.addView(column);
-        Switch toggle = new Switch(this);
-        toggle.setText(name);
-        toggle.setTextColor(TEXT);
-        toggle.setTextSize(16);
-        toggle.setChecked(prefs.getBoolean(key, def));
-        column.addView(toggle);
-        TextView description = new TextView(this);
-        description.setText(detail);
-        description.setTextColor(MUTED);
-        description.setTextSize(13);
-        description.setPadding(0, dp(8), 0, 0);
-        column.addView(description);
-        toggle.setOnCheckedChangeListener((button, checked) -> {
-            prefs.edit().putBoolean(key, checked).apply();
-            if (checked) getWindow().addFlags(WindowManager.LayoutParams.FLAG_SECURE);
-            else getWindow().clearFlags(WindowManager.LayoutParams.FLAG_SECURE);
-        });
-        if (prefs.getBoolean(key, def)) getWindow().addFlags(WindowManager.LayoutParams.FLAG_SECURE);
-    }
-
-    private void addInfo(LinearLayout root, String name, String detail) {
-        LinearLayout card = card(root);
-        LinearLayout column = new LinearLayout(this);
-        column.setOrientation(LinearLayout.VERTICAL);
-        column.setPadding(dp(16), dp(15), dp(16), dp(15));
-        card.addView(column);
-        TextView heading = new TextView(this);
-        heading.setText(name);
-        heading.setTextColor(TEXT);
-        heading.setTextSize(16);
-        heading.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
-        column.addView(heading);
-        TextView body = new TextView(this);
-        body.setText(detail);
-        body.setTextColor(MUTED);
-        body.setTextSize(13);
-        body.setPadding(0, dp(7), 0, 0);
-        column.addView(body);
-    }
-
-    private LinearLayout card(LinearLayout root) {
-        LinearLayout card = new LinearLayout(this);
-        card.setOrientation(LinearLayout.VERTICAL);
-        card.setBackgroundColor(PANEL);
-        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(-1, -2);
-        lp.bottomMargin = dp(12);
-        root.addView(card, lp);
-        return card;
-    }
-    private int dp(float v) { return (int)(v * getResources().getDisplayMetrics().density + 0.5f); }
-}
-''', encoding="utf-8")
-
-# Register the native screen in the app manifest.
-app_manifest = ROOT / "TMessagesProj/src/main/AndroidManifest.xml"
-manifest_text = app_manifest.read_text(encoding="utf-8")
-needle = '    <application'
-idx = manifest_text.find(needle)
-if idx < 0:
-    raise SystemExit("Could not find application element in main manifest")
-activity = '        <activity android:name="org.telegram.ui.NovaPrivacyActivity" android:exported="false" android:screenOrientation="unspecified" />\n'
-if "NovaPrivacyActivity" not in manifest_text:
-    app_open = manifest_text.find(">", idx)
-    if app_open < 0:
-        raise SystemExit("Malformed application element in main manifest")
-    manifest_text = manifest_text[:app_open + 1] + "\n" + activity + manifest_text[app_open + 1:]
-app_manifest.write_text(manifest_text, encoding="utf-8")
-
-# Add a Settings row and route it to the native NOVA screen.
+# Add a NOVA shortcuts section that routes to Telegram's real native feature screens.
+# These are functional entry points, not placeholder controls: passcode/privacy,
+# download/data management, and smart chat folders are handled by upstream screens.
 settings = ROOT / "TMessagesProj/src/main/java/org/telegram/ui/SettingsActivity.java"
 src = settings.read_text(encoding="utf-8")
-row_needle = '        items.add(SettingCell.Factory.of(10, IconBackgroundColors.PURPLE.top, IconBackgroundColors.PURPLE.bottom, R.drawable.settings_language, getString(R.string.SettingsLanguage), LocaleController.getCurrentLanguageName()));'
-if src.count(row_needle) != 1:
+row_anchor = '        items.add(SettingCell.Factory.of(10, IconBackgroundColors.PURPLE.top, IconBackgroundColors.PURPLE.bottom, R.drawable.settings_language, getString(R.string.SettingsLanguage), LocaleController.getCurrentLanguageName()));'
+if src.count(row_anchor) != 1:
     raise SystemExit("Settings language row anchor changed; refusing unsafe patch")
-src = src.replace(row_needle, row_needle + '\n        items.add(SettingCell.Factory.of(28, 0xFF4B75E8, 0xFF7655C9, R.drawable.settings_privacy, "NOVA Privacy Center", "Privacy controls"));', 1)
-click_needle = "            case 10:\n                presentSettingFragment(new LanguageSelectActivity());\n                break;"
-if src.count(click_needle) != 1:
+nova_rows = """
+        items.add(UItem.asShadow(null));
+        items.add(SettingCell.Factory.of(28, IconBackgroundColors.GREEN.top, IconBackgroundColors.GREEN.bottom, R.drawable.settings_privacy, "NOVA Privacy", "Passcode and account privacy"));
+        items.add(SettingCell.Factory.of(29, IconBackgroundColors.BLUE_DEEP.top, IconBackgroundColors.BLUE_DEEP.bottom, R.drawable.settings_data, "NOVA Downloads", "Storage and download controls"));
+        items.add(SettingCell.Factory.of(30, IconBackgroundColors.BLUE_ALT.top, IconBackgroundColors.BLUE_ALT.bottom, R.drawable.settings_folders, "NOVA Smart Folders", "Organize chats and conversations"));
+"""
+src = src.replace(row_anchor, row_anchor + nova_rows, 1)
+click_anchor = """            case 10:
+                presentSettingFragment(new LanguageSelectActivity());
+                break;"""
+if src.count(click_anchor) != 1:
     raise SystemExit("Settings click handler anchor changed; refusing unsafe patch")
-src = src.replace(click_needle, click_needle + '\n            case 28:\n                getParentActivity().startActivity(new android.content.Intent(getParentActivity(), NovaPrivacyActivity.class));\n                break;', 1)
+nova_cases = """
+            case 28:
+                presentSettingFragment(new PrivacySettingsActivity());
+                break;
+            case 29:
+                presentSettingFragment(new DataSettingsActivity());
+                break;
+            case 30:
+                presentSettingFragment(new FiltersSetupActivity());
+                break;"""
+src = src.replace(click_anchor, click_anchor + nova_cases, 1)
 settings.write_text(src, encoding="utf-8")
+print("NOVA native shortcuts added: Privacy, Downloads, Smart Folders")
